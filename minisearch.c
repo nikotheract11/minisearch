@@ -31,20 +31,20 @@ int find(t_node *t, const char* key, int text_id){
  int main(int argc, char const *argv[]) {
 
    t_node *t=NULL;
-   t = (t_node*) malloc(sizeof(t_node));
-/*   printf("d=%d\n",insert(&t,"Hello",1) );
+   //t = (t_node*) malloc(sizeof(t_node));
+   printf("d=%d\n",insert(&t,"Hello",1) );
    printf("d=%d\n",insert(&t,"nikalos",1) );
    printf("d=%d\n",insert(&t,"Nikos",1) );
    printf("d=%d\n",insert(&t,"Nifkos",1) );
-   //insert(&t,"nikos",1);
-   //insert(&t,"nalos",0);*/
-//   insert(&t,"nikalos",0);
+   insert(&t,"nikos",1);
+   insert(&t,"nalos",0);
+   insert(&t,"nikalos",0);
    printf("\n");
    //pr(t);
    char **str;
    str = get("./test.txt");
    int j=0;
-   insert(&t,"Nifkos",1);
+   //insert(&t,"Nifkos",1);
    while(str[j] != NULL) {
       printf("Breaking \"%s\" to tokens\n", str[j]);
       char *token = strtok(str[j]," ");
@@ -57,6 +57,6 @@ int find(t_node *t, const char* key, int text_id){
       }
       j++;
    }
-   //insert(&t,"Nifkos",1);
+   insert(&t,"Nifkos",1);
    return 0;
 }

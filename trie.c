@@ -38,7 +38,7 @@ int append(t_node **t,const char *key,int text_id){
       tmp = tmp->child;
       i++;
    }
-   addplist(t,text_id);
+   addplist(&tmp,text_id);
 
    return 0;
 }
@@ -47,18 +47,22 @@ int insert(t_node **t, const char* key, int text_id){
    t_node *tmp = *t;
    unsigned int i = 0;
 
-   if(*t == NULL) perror("NO TRIE\n");
+   if(*t == NULL) {//perror("NO TRIE\n");
+      tmp = (t_node*) malloc(sizeof(t_node));
+      append(&tmp,key,text_id);
+      return 22;
+   }
    for(i=0;i<strlen(key);i++){
       while(tmp->sibling != NULL && key[i] != tmp->value)
          tmp = tmp->sibling;
       if(key[i] != tmp->value){
          // string not exists, create trie node to it
-         if(tmp->value == 0) append(&tmp,&(key[i]),text_id);
-         else{
+      //   if(tmp->value == 0) append(&tmp,&(key[i]),text_id);
+      //   else{
             tmp->sibling = (t_node*) malloc(sizeof(t_node));
             tmp = tmp->sibling;
             append(&tmp,&(key[i]),text_id);
-         }
+      //   }
 
          return 3;
       }
