@@ -24,3 +24,4 @@ int insert(t_node **,const char *,int);
 void pr(t_node *);
 char** get(const char*);
 int getLinesNumber(FILE *);
+int a(t_node *);

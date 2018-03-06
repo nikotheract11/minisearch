@@ -3,71 +3,104 @@
 #include <string.h>
 #include "trie.h"
 
+int p_init(p_list ** p,int text_id,int freq){
+   *p = (p_list*) malloc(sizeof(p_list));
+   (*p)->next = NULL;
+   (*p)->text_id = text_id;
+   (*p)->freq = freq;
+   return 0;
+}
+
+static int ap=0;
 int addplist(t_node **t,int text_id){
    t_node *tmp = *t;
    if(tmp->plist == NULL) {
-      tmp->plist = (p_list*) malloc(sizeof(p_list));
-      tmp->plist->text_id = text_id;
-      tmp->plist->freq = 1;
+      ++ap;
+      //printf("p=%c,ti=%d,a=%d\n",tmp->value,text_id,ap );
+      p_init(&(tmp->plist),text_id,1);
       return 0;
    }
    else{
       p_list *p = tmp->plist;
-      while (p->next != NULL && p->text_id != text_id)
+      while (p != NULL){//} && p->text_id != text_id){
+         if(p->text_id == text_id) {
+            (p->freq)++;
+
+            return 0;
+         }
+
          p = p->next;
-      if(p->text_id == text_id)
-         (p->freq)++;
-      else {
-         while(p->next != NULL) p = p->next;
-         p->next = (p_list*) malloc(sizeof(p_list));
-         p = p->next;
-         p->text_id = text_id;
-         p->freq = 1;
-         return 0;
       }
+   //   printf("p=%c,ti=%d\n",tmp->value,p->freq );
+      p_init(&(p->next),text_id,1);
    }
-   return -1;
+   return 0;
 }
-//void pr(t_node *t);
+
+/*
+ * Initialize a t_node
+*/
+int t_init(t_node ** t){
+   *t = (t_node*)  malloc(sizeof(t_node));
+   (*t)->sibling = NULL;
+   (*t)->child = NULL;
+   (*t)->plist = NULL;
+   (*t)->value = 0;
+   return 0;
+}
+
+/*
+ * This function appends a key to trie t
+*/
 int append(t_node **t,const char *key,int text_id){
    unsigned int i=0;
    t_node *tmp = *t;
    while(i<(strlen(key)) ){
+   //   printf("c=%c\n", tmp->value);
+      if(key[i] == '\0') break;
       tmp->value = key[i];
-      tmp->child = (t_node*) malloc(sizeof(t_node));
-      tmp = tmp->child;
+      if(i== strlen(key)-1) break;
+      t_init(&(tmp->child));
+      tmp = tmp->child;    // xwris auto ti?
+
       i++;
    }
-   addplist(&tmp,text_id);
 
+   addplist(&tmp,text_id);
    return 0;
 }
 
+/*
+ * This functions inserts key with text_id to trie t
+*/
+
 int insert(t_node **t, const char* key, int text_id){
    t_node *tmp = *t;
-   unsigned int i = 0;
+   unsigned int i = 0,j=0;
 
-   if(*t == NULL) {//perror("NO TRIE\n");
-      tmp = (t_node*) malloc(sizeof(t_node));
+   // If trie is empty, create one
+   if(*t == NULL) {
+      printf("j=%d\n", j++);
+      t_init(t);
+      tmp = *t;
       append(&tmp,key,text_id);
       return 22;
    }
-   for(i=0;i<strlen(key);i++){
-      while(tmp->sibling != NULL && key[i] != tmp->value)
-         tmp = tmp->sibling;
-      if(key[i] != tmp->value){
-         // string not exists, create trie node to it
-      //   if(tmp->value == 0) append(&tmp,&(key[i]),text_id);
-      //   else{
-            tmp->sibling = (t_node*) malloc(sizeof(t_node));
-            tmp = tmp->sibling;
-            append(&tmp,&(key[i]),text_id);
-      //   }
 
-         return 3;
+   for(i=0;i<strlen(key);i++){
+      while( key[i] != tmp->value ){
+         if(tmp->sibling == NULL) break;
+         tmp = tmp->sibling;
       }
 
-      else if(i == (strlen(key) - 1)) {
+      if(key[i] != tmp->value){
+            t_init(&(tmp->sibling));
+            tmp = tmp->sibling;
+            append(&tmp,&(key[i]),text_id);
+            return 3;
+      }
+
+      else if(i == (strlen(key) - 1) ) {
          addplist(&tmp,text_id);
          return 0;
       }
@@ -80,25 +113,28 @@ int insert(t_node **t, const char* key, int text_id){
    return -2;
 }
 
-void pr(t_node *t){
-   if(t == NULL) return;
-   printf("%c", t->value);
-   pr(t->child);
-//   printf("\n" );
-   pr(t->sibling);
-   printf("\n" );
+int a(t_node *t){
+   //if(t == NULL) printf("NULL\n");
+   //else printf("NOT NULL\n");
+//   if(t->value != 0) printf("%c",t->value );
+   if(t->sibling != NULL) a(t->sibling);
+   if(t->child != NULL) a(t->child);
+   p_list *p = t->plist;
+   while(p!=NULL){
+      printf("tid=%d,freq=%d\n",p->text_id,p->freq );
+      p = p->next;
+   }
+
+   return 0;
 }
 
 int getLinesNumber(FILE *fp){
-	//FILE *fp=fopen(file,"r");
 	char c;// = fgetc(fp);
 	int count = 0;
 	while(!feof(fp)){
 		c = fgetc(fp);
 		if(c == '\n') count++;
-		//c = fgetc(fp);
 	}
-//	fclose(fp);
    fseek(fp,0,0);
 	return ++count;
 }
@@ -119,8 +155,7 @@ char** get(const char* file){
       if(i == 0) id = c - '0';
       if(id != j) printf("id=%d\n",id );//perror("ERROR\n");
       if(c == '\n' || feof(fp) ) {
-        // j++;
-         //ungetc(1,fp);
+         ungetc('!',fp);
 	      if(!feof(fp)) i++;
          fseek(fp,-(i-2),SEEK_CUR);
          str[j] = (char*) malloc(i*sizeof(char));
