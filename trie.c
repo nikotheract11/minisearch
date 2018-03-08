@@ -11,28 +11,28 @@ int p_init(p_list ** p,int text_id,int freq){
    return 0;
 }
 
-static int ap=0;
+static int ap=0;     // =================== δελετε τηισ
 int addplist(t_node **t,int text_id){
    t_node *tmp = *t;
    if(tmp->plist == NULL) {
       ++ap;
-      //printf("p=%c,ti=%d,a=%d\n",tmp->value,text_id,ap );
       p_init(&(tmp->plist),text_id,1);
       return 0;
    }
    else{
       p_list *p = tmp->plist;
-      while (p != NULL){//} && p->text_id != text_id){
+      while (p != NULL){
          if(p->text_id == text_id) {
             (p->freq)++;
-
             return 0;
          }
-
+         if(p->next == NULL) {
+            p_init(&(p->next),text_id,1);
+            p = p->next;
+            break;
+         }
          p = p->next;
       }
-   //   printf("p=%c,ti=%d\n",tmp->value,p->freq );
-      p_init(&(p->next),text_id,1);
    }
    return 0;
 }
@@ -112,18 +112,29 @@ int insert(t_node **t, const char* key, int text_id){
    }
    return -2;
 }
-
-int a(t_node *t){
-   //if(t == NULL) printf("NULL\n");
-   //else printf("NOT NULL\n");
-//   if(t->value != 0) printf("%c",t->value );
-   if(t->sibling != NULL) a(t->sibling);
+int a(t_node *t,int c){
+   /*if(t->sibling != NULL) a(t->sibling);
    if(t->child != NULL) a(t->child);
    p_list *p = t->plist;
    while(p!=NULL){
       printf("tid=%d,freq=%d\n",p->text_id,p->freq );
       p = p->next;
+   }*/
+   if(t == NULL ) return -1;
+   //if(t->sibling == NULL) printf("c=%c\n",t->value );
+   if(t->child == NULL) printf("%c\n",t->value );
+   else{
+      t_node *p = t->child;
+      while(p != NULL){
+         printf("%c",t->value );
+         a(p,0);
+         p = p->sibling;
+         if(t->child == NULL) printf("\n");
+      }
+      if(c==1) a(t->sibling,1);
+   //   a(t->child,0);
    }
+
 
    return 0;
 }
@@ -146,7 +157,8 @@ char** get(const char* file){
    int i=0,j=0,id;
    char c;
    char **str;// =  *s;
-   str = (char**) malloc(getLinesNumber(fp)*sizeof(char*));
+   N = getLinesNumber(fp);
+   str = (char**) malloc(N*sizeof(char*));
    if(feof(fp)) printf("************\n" );
 
    while( !feof(fp) ){
