@@ -48,8 +48,12 @@ int find(t_node *t, const char* key, int text_id){
    //insert(&t,"Nifkos",1);
    while(str[j] != NULL) {
    //   printf("Breaking \"%s\" to tokens\n", str[j]);
+      FILE *f = fopen("./test.txt","r");
+      int D[getLinesNumber(f)];
+      fclose(f);
       token = strtok(str[j]," ");
       while(token != NULL){
+         D[j]++;
          if(token[strlen(token)-1] =='\n' || token[strlen(token)-1] ==' ') token[strlen(token)-1]='\0'; // ===============
       //   printf("\"%s\"\n",token );
          //if(strcmp(token," ")==0) token  = strtok(NULL," ");
@@ -60,7 +64,7 @@ int find(t_node *t, const char* key, int text_id){
    }
    //insert(&t,"Nifkos",1);++
    if(t == NULL) printf("$$$$$$$$$$$$$$$$$$$$$$\n" );
-   printf("\nooo=%d\n",a(t) );
+   printf("\nooo=%d\n",a(t,1) );
    //pr(t);
    return 0;
 }

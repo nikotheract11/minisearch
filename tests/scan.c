@@ -20,8 +20,9 @@ char **getok(char* s,int *k){
       if(j>11) break;
    }
    *k=j;
+   printf("c=%d,j=%d\n",count,j );
    return str;
-   printf("c=%d\n",count );
+
 }
 
 int search(char** s){

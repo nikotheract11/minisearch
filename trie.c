@@ -3,6 +3,7 @@
 #include <string.h>
 #include "trie.h"
 
+
 int p_init(p_list ** p,int text_id,int freq){
    *p = (p_list*) malloc(sizeof(p_list));
    (*p)->next = NULL;
@@ -11,11 +12,9 @@ int p_init(p_list ** p,int text_id,int freq){
    return 0;
 }
 
-static int ap=0;     // =================== δελετε τηισ
-int addplist(t_node **t,int text_id){
-   t_node *tmp = *t;
+int addplist(int text_id){
+   t_node *tmp = t;
    if(tmp->plist == NULL) {
-      ++ap;
       p_init(&(tmp->plist),text_id,1);
       return 0;
    }
@@ -74,15 +73,15 @@ int append(t_node **t,const char *key,int text_id){
  * This functions inserts key with text_id to trie t
 */
 
-int insert(t_node **t, const char* key, int text_id){
-   t_node *tmp = *t;
+int insert( const char* key, int text_id){
+   t_node *tmp = t;
    unsigned int i = 0,j=0;
 
    // If trie is empty, create one
-   if(*t == NULL) {
+   if(t == NULL) {
       printf("j=%d\n", j++);
-      t_init(t);
-      tmp = *t;
+      t_init(&t);
+      tmp = t;
       append(&tmp,key,text_id);
       return 22;
    }
