@@ -9,11 +9,12 @@ int p_init(p_list ** p,int text_id,int freq){
    (*p)->next = NULL;
    (*p)->text_id = text_id;
    (*p)->freq = freq;
+   (*p)->plen = 0;
    return 0;
 }
 
-int addplist(int text_id){
-   t_node *tmp = t;
+int addplist(t_node **t,int text_id){
+   t_node *tmp = *t;
    if(tmp->plist == NULL) {
       p_init(&(tmp->plist),text_id,1);
       return 0;
@@ -27,7 +28,8 @@ int addplist(int text_id){
          }
          if(p->next == NULL) {
             p_init(&(p->next),text_id,1);
-            p = p->next;
+            p = p->next;      // ======= useless?
+            (tmp->plist->plen)++;
             break;
          }
          p = p->next;
@@ -79,7 +81,6 @@ int insert( const char* key, int text_id){
 
    // If trie is empty, create one
    if(t == NULL) {
-      printf("j=%d\n", j++);
       t_init(&t);
       tmp = t;
       append(&tmp,key,text_id);
@@ -111,30 +112,24 @@ int insert( const char* key, int text_id){
    }
    return -2;
 }
-int a(t_node *t,int c){
-   /*if(t->sibling != NULL) a(t->sibling);
-   if(t->child != NULL) a(t->child);
-   p_list *p = t->plist;
-   while(p!=NULL){
-      printf("tid=%d,freq=%d\n",p->text_id,p->freq );
-      p = p->next;
-   }*/
+int a(t_node *t,char *buf,int i){
+   t_node *tmp=t;
    if(t == NULL ) return -1;
-   //if(t->sibling == NULL) printf("c=%c\n",t->value );
-   if(t->child == NULL) printf("%c\n",t->value );
-   else{
-      t_node *p = t->child;
-      while(p != NULL){
-         printf("%c",t->value );
-         a(p,0);
-         p = p->sibling;
-         if(t->child == NULL) printf("\n");
-      }
-      if(c==1) a(t->sibling,1);
-   //   a(t->child,0);
+   if(buf == NULL) {
+      buf = (char*) malloc(32*sizeof(char));
+      i = 0;
+      buf[i++] = tmp->value;
    }
 
-
+   else{
+      buf[i++] = tmp->value;
+      if(tmp->plist != NULL) {
+         printf("%s\n",buf );
+         buf[--i]='\0';
+      }
+   }
+   a(tmp->child,buf,i);
+   a(tmp->sibling,buf,--i);
    return 0;
 }
 
@@ -166,7 +161,7 @@ char** get(const char* file){
       if(i == 0) id = c - '0';
       if(id != j) printf("id=%d\n",id );//perror("ERROR\n");
       if(c == '\n' || feof(fp) ) {
-         ungetc('!',fp);
+         ungetc('!',fp);      // ============= delete this?
 	      if(!feof(fp)) i++;
          fseek(fp,-(i-2),SEEK_CUR);
          str[j] = (char*) malloc(i*sizeof(char));
@@ -175,7 +170,6 @@ char** get(const char* file){
       }
       else i++;
    }
-   printf("i=%d, j=%d,s=%s\n",i,j,str[1] );
    fclose(fp);
 
    return str;

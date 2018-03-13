@@ -5,32 +5,35 @@
 
 struct s{
    int val;
-   struct s *next;
+   char *name;
 };
 
-struct s *s;
-int *i;
-
-int a(){
-   s = (struct s*) malloc(sizeof(struct s));
-   s->val = 1888;
-   s->next = NULL;
-   return 0;
+int cmp(const void * a, const void * b){
+   //printf("a=%d,b=%d\n",(*((struct s**) a))->val,(*((struct s**) b))->val );
+   return -((*((struct s**) a))->val-(*((struct s**) b))->val );
 }
 
-int b(){
-
-   struct s *t = s;
-   printf("Before b, val=%d\n",s->val );
-   t->next = (struct s*) malloc(sizeof(struct s));
-   t = s->next;
-   t->val = 2222;
-   t->next = NULL;
-   return 0;
-}
 int main(){
-   a();
-   printf("a=%d\n",s->val );
-   b();
-   printf("b=%d,b->next=%d\n",s->val,s->next->val );
+   struct s *a[3];
+   a[0] = malloc(sizeof(struct s));
+   a[0]->val = 34;
+   a[0]-> name = malloc(10*sizeof(char));
+   strcpy(a[0]->name,"a");
+
+   a[1] = malloc(sizeof(struct s));
+   a[1]->val = 394;
+   a[1]-> name = malloc(10*sizeof(char));
+   strcpy(a[1]->name,"b");
+
+   a[2] = malloc(sizeof(struct s));
+   a[2]->val = 4;
+   a[2]-> name = malloc(10*sizeof(char));
+   strcpy(a[2]->name,"c");
+
+   qsort(a,3,sizeof(struct s* ),cmp);
+   for(int i=0;i<3;i++){
+      printf("%s:%d ", a[i]->name,a[i]->val);
+   }
+   printf("\n");
+
 }

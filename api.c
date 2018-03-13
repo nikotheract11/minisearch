@@ -5,12 +5,9 @@
 #include <math.h>
 #include "trie.h"
 
-
-
-int main(int argc, char * const argv[]) {
+int mygetopt(int argc, char * const argv[], int *p,char **filename){
+   int opt,k;
    char *file;
-   int k,opt;
-
    while((opt = getopt(argc,argv,"i:k:") )!= -1)   {
       switch (opt) {
          case 'i':
@@ -25,6 +22,20 @@ int main(int argc, char * const argv[]) {
             break;
          }
    }
+   *p=k;
+   *filename = file;
+   return 0;
+
+}
+
+int main(int argc, char * const argv[]) {
+   char *file;
+   int k;
+   mygetopt(argc,argv,&k,&file);
+   char **str;
+   init(file,&str);
+   interface();
+
    return 0;
 }
 
@@ -46,19 +57,9 @@ double idf(int n){
    return log10((N-n+0.5)/(n+0.5));
 }
 
-double score(const char** q,uint q_num,int text_id,int f,int n){
-   double sum = 0;
-
-   for(uint i=0;i<q_num;i++){
-      /*int f,n;
-      if(find(q[i],&f,&n,text_id) < 0) {
-         perror("find error on score");
-         return -1;
-      }*/
-
-      sum += idf(n)*((f*(k_1 + 1))/(f + k_1*(1 - b + b*(D[i]/avgdl() ) ) ) );
-   }
-
+double score(int n,p_list *p){
+   double sum ;
+   sum = idf(n)*((p->freq*(k_1 + 1))/(p->freq + k_1*(1 - b + b*(D[p->text_id]/avgdl() ) ) ) );
    return sum;
 }
 
@@ -75,19 +76,14 @@ p_list* find(const char *key){
             if(tmp->sibling == NULL) return NULL;
             tmp = tmp->sibling;
          }
-         if(tmp->child == NULL) return NULL;
+         if(tmp->child == NULL && i<(strlen(key)-1)) return NULL;
          else if(i<(strlen(key)-1)) tmp = tmp->child;
+         else continue; // ======== useless?
 
       }
       if(tmp->plist == NULL) return NULL;
       else{
-      //   *n = 0;
          p_list *p = tmp->plist;
-         /*while(p != NULL){
-            (*n)++;
-            if(p->text_id == text_id) (*f) = p->freq;
-            p = p->next;
-         }*/
          return p;
       }
 }
@@ -95,7 +91,7 @@ p_list* find(const char *key){
 
 
 
-int init(const char* filename,char ***s,t_node **t){
+int init(const char* filename,char ***s){
       char **str = get(filename);
       char *token;
       int j=0;
@@ -104,11 +100,11 @@ int init(const char* filename,char ***s,t_node **t){
       //for(uint i=0;i<*N;i++) (*D)[i] = (int*) malloc(sizeof(int));
 
       while(str[j] != NULL) {
-         token = strtok(str[j]," ");
+         token = strtok(str[j]," ");      // pros8etw edw gia id kai meta8etw tin 112->109
          while(token != NULL){
             (D)[j]++;
             if(token[strlen(token)-1] =='\n' || token[strlen(token)-1] ==' ') token[strlen(token)-1]='\0'; // =======
-            if(insert(t,token,j)<0) perror("*******  ");
+            if(insert(token,j)<0) perror("*******  ");
             token  = strtok(NULL," ");
          }
          j++;
