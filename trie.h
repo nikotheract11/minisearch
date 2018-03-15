@@ -12,6 +12,7 @@
 uint N;     // Number of texts
 uint *D;    // Array with the number of words from each text
 struct t_node *t;  // Trie root node
+char **str; // the map to the texts
 
 struct pair {
    int text_id;

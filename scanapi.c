@@ -5,7 +5,7 @@
 #include "./trie.h"
 #include "./heaps/PQInterface.h"
 
-char **getok(char* s,int *k){
+char** getok(char* s,int *k){
    char **str;
    int count=0;
    for(unsigned int i=0;i<=strlen(s);i++){
@@ -48,10 +48,10 @@ int search(char** s,int j){
       }
       PriorityQueue PQ;
       Initialize(&PQ,N);
-      for(int k=0;k<N;k++){
+      for(uint k=0;k<N;k++){
          if(Score[k] != NULL) Insert(Score[k],&PQ);
       }
-      for(int k=0;k<N;k++){
+      for(uint k=0;k<N;k++){
          pair *p = Remove(&PQ);
 
          if(p!=NULL) printf("id=%d, score=%f\n",p->text_id,p->score );
@@ -85,7 +85,7 @@ int tf(char** s){
       else p = p->next;
    }
 
-   return -1;
+   return -2;
 }
 
 int operate( char** s,int j){

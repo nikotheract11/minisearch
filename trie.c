@@ -17,6 +17,7 @@ int addplist(t_node **t,int text_id){
    t_node *tmp = *t;
    if(tmp->plist == NULL) {
       p_init(&(tmp->plist),text_id,1);
+      (tmp->plist->plen)++;
       return 0;
    }
    else{
@@ -77,7 +78,7 @@ int append(t_node **t,const char *key,int text_id){
 
 int insert( const char* key, int text_id){
    t_node *tmp = t;
-   unsigned int i = 0,j=0;
+   unsigned int i = 0;//,j=0;
 
    // If trie is empty, create one
    if(t == NULL) {
@@ -86,6 +87,7 @@ int insert( const char* key, int text_id){
       append(&tmp,key,text_id);
       return 22;
    }
+   if(strlen(key) <= 0) return 0;
 
    for(i=0;i<strlen(key);i++){
       while( key[i] != tmp->value ){
@@ -100,11 +102,11 @@ int insert( const char* key, int text_id){
             return 3;
       }
 
-      else if(i == (strlen(key) - 1) ) {
+      if(i == (strlen(key) - 1) ) {
          addplist(&tmp,text_id);
          return 0;
       }
-      else if(tmp->child != NULL) tmp = tmp->child;
+      if(tmp->child != NULL && i < (strlen(key) -1)) tmp = tmp->child;
       else {
          append(&tmp,&(key[i]),text_id);
          return 88;
@@ -120,16 +122,19 @@ int a(t_node *t,char *buf,int i){
       i = 0;
       buf[i++] = tmp->value;
    }
+   //if(i==0 && t->plist != NULL) freq = t->plist->plen;
 
    else{
       buf[i++] = tmp->value;
       if(tmp->plist != NULL) {
-         printf("%s\n",buf );
-         buf[--i]='\0';
+
+         buf[i]='\0';
+         printf("%s %d\n",buf,tmp->plist->plen );
       }
    }
    a(tmp->child,buf,i);
    a(tmp->sibling,buf,--i);
+
    return 0;
 }
 
@@ -154,16 +159,24 @@ char** get(const char* file){
    N = getLinesNumber(fp);
    str = (char**) malloc(N*sizeof(char*));
    if(feof(fp)) printf("************\n" );
-
+   char *ids = (char*) malloc(10*sizeof(char));
    while( !feof(fp) ){
       c = fgetc(fp);
       if(c == EOF) break;
-      if(i == 0) id = c - '0';
-      if(id != j) printf("id=%d\n",id );//perror("ERROR\n");
+      else ungetc(c,fp);
+      if(i == 0){
+         fscanf(fp,"%s",ids);
+         id = atoi(ids);
+         if(id != j) printf("id=%d,j=%d\n",id,j );//perror("ERROR\n");
+      }
+
+      c = fgetc(fp);
+      if(c == EOF) break;
+
       if(c == '\n' || feof(fp) ) {
-         ungetc('!',fp);      // ============= delete this?
+      //   ungetc('!',fp);      // ============= delete this?
 	      if(!feof(fp)) i++;
-         fseek(fp,-(i-2),SEEK_CUR);
+         fseek(fp,-(i-strlen(ids)+2),SEEK_CUR);
          str[j] = (char*) malloc(i*sizeof(char));
          fgets(str[j++],i,fp);
          i=0;

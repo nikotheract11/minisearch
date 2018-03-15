@@ -94,7 +94,7 @@ p_list* find(const char *key){
 int init(const char* filename,char ***s){
       char **str = get(filename);
       char *token;
-      int j=0;
+      int j=0,inn;
 
       D = (uint*) malloc(sizeof(int)*N);
       //for(uint i=0;i<*N;i++) (*D)[i] = (int*) malloc(sizeof(int));
@@ -104,7 +104,7 @@ int init(const char* filename,char ***s){
          while(token != NULL){
             (D)[j]++;
             if(token[strlen(token)-1] =='\n' || token[strlen(token)-1] ==' ') token[strlen(token)-1]='\0'; // =======
-            if(insert(token,j)<0) perror("*******  ");
+            if((inn=insert(token,j))<0) printf("%d\n", inn);//perror("*******  ");
             token  = strtok(NULL," ");
          }
          j++;
