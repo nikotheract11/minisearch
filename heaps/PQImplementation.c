@@ -48,7 +48,10 @@ pair* Remove(PriorityQueue *PQ)
    pair *ItemToPlace;
    pair *ItemToReturn;
 
-   if(Empty(PQ)) return NULL;
+   if(Empty(PQ)) {
+      free(PQ);
+      return NULL;
+   }
 
    ItemToReturn=PQ->ItemArray[1];
    ItemToPlace=PQ->ItemArray[PQ->Count];
