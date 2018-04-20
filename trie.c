@@ -163,7 +163,7 @@ int getLinesNumber(FILE *fp){
 		if(c == '\n') count++;
 	}
    fseek(fp,0,0);
-	return ++count;
+	return ++count;        // ++count becuase the last line has not a '\n' in the end
 }
 
 /*
@@ -173,6 +173,7 @@ char** get(const char* file){
 
    FILE *fp;
    fp = fopen(file,"r");
+   if(fp == NULL) return NULL;
    int i=0,j=0,id;
    char c;
 
@@ -180,36 +181,27 @@ char** get(const char* file){
    str = (char**) malloc(N*sizeof(char*));
    for(int k=0;k<N;k++) str[k] = NULL;
 
-   if(feof(fp)) printf("************\n" );
+   while(i++<N ){
+      int a;
+      fscanf(fp,"%d",&id);    // Get id
 
-   char *ids = (char*) malloc(10*sizeof(char));    // 10 becuase not possible more than 9999999999 ids
+      if(id != j) {
+         printf("Index Error\n");
+         return NULL;
+      }
 
-   while( !feof(fp) ){
-      c = fgetc(fp);
-      if(c == EOF) break;
+      fgetc(fp);           // Ignore tabs and whitespaces
+
+      getline(&(str[j]),&a,fp);
+
+      if((c=fgetc(fp)) == EOF) break;
       else ungetc(c,fp);
-      if(i == 0){
-         fscanf(fp,"%s",ids);
-         id = atoi(ids);
-         if(id != j) printf("id=%d,j=%d\n",id,j );//perror("ERROR\n");
-      }
-
-      c = fgetc(fp);
-      if(c == EOF) break;
-
-      if(c == '\n' || feof(fp) ) {
-	      if(!feof(fp)) i++;
-         fseek(fp,-(i-strlen(ids)+2),SEEK_CUR);
-         str[j] = (char*) malloc((i+1)*sizeof(char));
-         fgets(str[j++],i,fp);
-         i=0;
-      }
-      else i++;
+      j++;
    }
    fclose(fp);
-   free(ids);
 
-   return str;
+
+return str;
 }
 
 int get_terminal_width(){
@@ -222,61 +214,101 @@ int get_terminal_width(){
 /*
  * Called from form_pr to find positions to print ^^^^^
 */
-void pr(char *str,char **arg,int j){
-	char *tmp,*tok;
-	int space = 1;
-	struct st *A[10];
-	for(int i=0;i<10;i++) A[i] = NULL;
+void pr(char *str,char **arg,int j,int c,int gap){
 
-	if(str[0] == ' ') space = 1;
-   if(str[1] == ' ') space--;
+	char *tmp,*tok;
+	int space = 0;
+   int allocated_m = 32;
+	struct st **A = malloc(allocated_m*sizeof(struct st*));    // Initialy up to 32 words to be printed, but reallocated if needed
+	for(int i=0;i<10;i++) A[i] = NULL;
+   int max_digs = digit_precision();
+   int max_gap = 2*max_digs + 14;
+
+   /* The difference between gap and max_gap is
+    * that gap may be less (e.g. when id is a single diti num)
+    * so the first substring needs less whitespaces (speacially max_gap-gap)
+   */
+
+   if(c!=0) for(int i=0;i<max_gap;i++) printf(" ");      // print whitespaces to be alligned
+   else for(int i=0;i<max_gap-gap;i++) printf(" ");
+
+
+   while(space < strlen(str) && \
+        (str[space] == ' ' || str[space]== '\t'))
+            {gap++;space++;}
 
 	printf("%s\n",str);
-	tmp = malloc((strlen(str)+1)*sizeof(char));
+	tmp = malloc((strlen(str)+1)*sizeof(char));    // tmp is for strtok so that str does not change
 	strcpy(tmp,str);
 	tok = strtok(tmp," ");
-	int ii=0;
+	int ii=0;        /* ii is the index to the struct st array A ,
+                     * which stores information about things to be printed
+                    */
 
+   // Break to tokens and compare with keywords
 	while(tok != NULL){
 			for(int k=0;k<j;k++){
 				if(!strcmp(tok,arg[k])) {
+               if(ii == allocated_m) {
+                  A = realloc(A,allocated_m+32);
+                  allocated_m += 32;
+               }
 					A[ii] = malloc(sizeof(struct st));
 					A[ii]->pos = space;
 					A[ii++]->len = strlen(tok);
 				}
 			}
 			space += strlen(tok)+1;
+         while(space < strlen(str) && str[space] == ' ') space++;
 			tok = strtok(NULL," ");
 	}
+
 	int i=0;
-	for(int k=0;k<10;k++) {
+	for(int k=0;k<ii;k++) {
 		if(A[k] == NULL) break;
-		while (i++<A[k]->pos) {
+		while (i++<A[k]->pos+max_gap) {
 			printf(" ");
 		}
-		for(int l=0;l<A[k]->len;l++,i++) printf("^");
+		for(int l=0;l<A[k]->len;l++,i++) printf(ANSI_COLOR_GREEN"^"ANSI_COLOR_RESET);
 		printf(" ");
 	}
-	printf("\n");
+	if(A[0] != NULL) printf("\n");
+   free(tmp);
+   for(int i=0;i<ii;i++) if(A[i] != NULL) free(A[i]);
+   free(A);
 }
 
 /*
  * Formated print, to identify keywords
 */
-void form_pr(char *str,char **arg,int j){
-   int l = get_terminal_width();
-   int len = strlen(str);
-   char *s = malloc(l*sizeof(char));
-   int counter = 0;
-   while(counter < len){
-      for(int i=0;i<l;i++) {
-         if(i+counter == len-1) break;
-         s[i]=str[i+counter];
-      }
-      s[l]='\0';
+void form_pr(char *str,char **arg,int j,int gap){
 
-      pr(s,arg,j);
-      counter += l;
+   int l = get_terminal_width();
+   int max_digs = digit_precision();            // Max possible # of digits
+   int max_gap = 2*max_digs + 14;               // Max positions that the first fields need
+   int len = strlen(str);
+   char *s = NULL;
+
+   s=(char*) malloc(((l-max_gap)+2)*sizeof(char));
+   if(s == NULL) return NULL;
+   int counter = 0,i=0;
+
+
+
+   /* while not all the string is printed,
+    * break it into substring with terminal_width length and print each
+   */
+   while(counter < len){
+      for(i=0;i<l-max_gap-1;i++) {
+         s[i]=str[i+counter];
+         if(i+counter == len-1 ) break;
+      }
+
+      s[i]='\0';
+
+      pr(s,arg,j,counter,gap);
+      counter += l-max_gap-1;
    }
+   free(s);
 
 }

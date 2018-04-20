@@ -11,7 +11,7 @@
 int mygetopt(int argc, char * const argv[], int *p,char **filename){
    int opt,k;
    char *file;
-   while((opt = getopt(argc,argv,"i:k:") )!= -1)   {
+   while((opt = getopt(argc,argv,":i:k:") )!= -1)   {
       switch (opt) {
          case 'i':
          file = (char*) malloc((strlen(optarg)+1)*sizeof(char));
@@ -20,7 +20,15 @@ int mygetopt(int argc, char * const argv[], int *p,char **filename){
             break;
 
          case 'k':
-            k = atoi(optarg);
+            k=atoi(optarg);
+            if(k<1){
+               perror("K can't be negative or 0");
+               return -1;
+            }
+            printf("k=%d\n",k);
+            break;
+         case ':':
+            k = 10;
             printf("k=%d\n",k);
             break;
          }
@@ -31,25 +39,7 @@ int mygetopt(int argc, char * const argv[], int *p,char **filename){
 
 }
 
-int main(int argc, char * const argv[]) {
-   char *file;
-   int k;
 
-   // Get cl arguments
-   mygetopt(argc,argv,&k,&file);
-
-   // Create map and trie
-   init(file);
-
-   // Application Interface
-   interface(k);
-
-   // cleaning up space
-   free(file);
-   mfree();
-
-   return 0;
-}
 
 double avgdl(){
    double sum = 0.0;
@@ -92,7 +82,7 @@ p_list* find(const char *key){
          }
          if(tmp->child == NULL && i<(strlen(key)-1)) return NULL;
          else if(i<(strlen(key)-1)) tmp = tmp->child;
-         else continue; // ======== useless?
+         else continue;
 
       }
       if(tmp->plist == NULL) return NULL;
@@ -108,9 +98,10 @@ p_list* find(const char *key){
  * Initialize data structures like map and trie
 */
 int init(const char* filename){
-      str=get(filename);   // create the map
+      if((str=get(filename)) == NULL) return -1;   // create the map
       char *token,*tmp;
       int j=0,inn;
+
 
       D = (uint*) malloc(sizeof(int)*N);     // Array containing # of words per text
       for(uint i=0;i<N;i++) D[i] = 0;
@@ -124,7 +115,7 @@ int init(const char* filename){
          while(token != NULL){
             (D[j])++;
             if(token[strlen(token)-1] =='\n' || token[strlen(token)-1] ==' ') token[strlen(token)-1]='\0'; // =======
-            if((inn=insert(token,j))<0) printf("%d\n", inn);
+            if((inn=insert(token,j))<0) printf("ERROR %d\n", inn);
             token  = strtok(NULL," ");
          }
          j++;

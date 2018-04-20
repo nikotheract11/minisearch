@@ -7,6 +7,8 @@
 
 #define  k_1 1.2
 #define b 0.75
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
 
 
 uint N;     // Number of texts
@@ -42,19 +44,20 @@ struct t_node {   // this is a trie node
 typedef struct pair pair;
 typedef struct t_node t_node;
 typedef struct p_list p_list;
+typedef unsigned int uint;
 
 // trie.c
 int p_init(p_list **,int ,int );
 int t_init(t_node **);
 int get_terminal_width();
-void pr(char *,char **,int);
+void pr(char *,char **,int,int,int);
 int addplist(t_node **, int );
 int append(t_node **,const char *,int);
 int insert(const char *,int);
 char** get(const char*);
 int getLinesNumber(FILE *);
 int pr_trie(t_node *,char *,int );
-void form_pr(char *,char **,int);
+void form_pr(char *,char **,int,int);
 
 // api.c
 p_list * find(const char *);
@@ -64,11 +67,12 @@ void mfree();
 void p_free(p_list **);
 void t_free(t_node **);
 
-// scanapi.c
+// app_functions.c
 int mygetopt(int , char * const arg[], int *,char **);
 double avgdl();
 double idf(int);
 double score(int n,p_list *);
 int interface(int);
+int digit_precision();
 
 #endif

@@ -13,12 +13,6 @@ int Empty(PriorityQueue *PQ)
     return(PQ->Count==0);
 }
 
-int Full(PriorityQueue *PQ)
-{
-    return(PQ->Count==MAXCOUNT);
-}
-
-
 void Insert(pair *Item, PriorityQueue *PQ)
 {
     int ChildLoc;
